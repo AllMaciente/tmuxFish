@@ -31,13 +31,21 @@ function tfa
         return
     end
 
-    # Seleciona sessão ou cria nova via fzf
-    set session (tmux ls -F "#{session_name}" | \
-        fzf --header "Escolha sessão • ENTER conecta • ESC cria nova")
+    # Pega lista de sessões
+    set sessions (tmux ls -F "#{session_name}" 2>/dev/null)
 
+    # Se só tiver uma sessão, conecta direto nela
+    if test (count $sessions) -eq 1
+        tmux attach -t $sessions[1]
+        return
+    end
+
+    # Seleciona sessão ou cria nova via fzf
+    set session (printf "%s\n" $sessions | \
+        fzf --header "Escolha sessão • ENTER conecta • ESC cria nova")
     if test -z "$session"
         tmux new -s $name
     else
         tmux attach -t $session
     end
-  end
+end
